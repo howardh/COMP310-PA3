@@ -1,0 +1,5 @@
+CC=clang
+LD=clang
+
+CC_FLAGS= -g -I../include
+LD_FLAGS= -pthread 

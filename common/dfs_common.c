@@ -6,7 +6,7 @@
  * args - argument of the function
  * return the handler of the thread
  */
-inline pthread_t * create_thread(void * (*entry_point)(void*), void *args)
+extern inline pthread_t * create_thread(void * (*entry_point)(void*), void *args)
 {
 	//DONE: create the thread and run it
 	pthread_t * thread = malloc(sizeof(pthread_t));

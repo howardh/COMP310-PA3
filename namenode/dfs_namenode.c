@@ -175,11 +175,11 @@ void get_system_information(int client_socket, dfs_cm_client_req_t request)
 	//TODO:fill the response and send back to the client
 	dfs_system_status response;
 	response.datanode_num = dncnt;
-	//int i = 0;
-	//for (i = 0; i < MAX_FILE_BLK_COUNT; i++)
-	//{
-	//	response.datanodes[i]; //WHAT DO I DO HERE?? WHAT IS THIS THING??
-	//}
+	int i = 0;
+	for (i = 0; i < MAX_FILE_BLK_COUNT; i++)
+	{
+		response.datanodes[i]; //WHAT DO I DO HERE?? WHAT IS THIS THING??
+	}
 
 	send_data(client_socket, &response, sizeof(response));
 }

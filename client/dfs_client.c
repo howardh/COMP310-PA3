@@ -86,9 +86,9 @@ dfs_system_status *get_system_info(int namenode_socket)
 	printf("Done.\n");
 	
 	//DONE: get the response
-	dfs_system_status *response; 
+	dfs_system_status *response = malloc(sizeof(dfs_system_status)); 
 	printf("Receiving get_system_info response..."); fflush(stdout);
-	receive_data(namenode_socket, response, sizeof(dfs_system_status));
+	receive_data(namenode_socket, response, sizeof(response));
 	printf("Done. (datanode_num=%d)\n", response->datanode_num);
 
 	return response;

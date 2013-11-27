@@ -29,7 +29,7 @@ int mainLoop(int server_socket)
 
 		dfs_cm_client_req_t request;
 		//DONE: receive requests from client and fill it in request
-		receive_data(server_socket, &request, sizeof(dfs_cm_client_req_t));
+		receive_data(client_socket, &request, sizeof(request));
 		printf("Data received from client.\n");
 
 		requests_dispatcher(client_socket, request);
@@ -85,9 +85,9 @@ int register_datanode(int heartbeat_socket)
 		assert(datanode_socket != INVALID_SOCKET);
 		dfs_cm_datanode_status_t datanode_status;
 		//DONE: receive datanode's status via datanode_socket
-		printf("Receiving data..."); fflush(stdout);
+		//printf("Receiving data..."); fflush(stdout);
 		receive_data(datanode_socket, &datanode_status, sizeof(dfs_cm_datanode_status_t));
-		printf("Done.\n");
+		//printf("Done.\n");
 
 		if (datanode_status.datanode_id < MAX_DATANODE_NUM)
 		{
@@ -96,7 +96,7 @@ int register_datanode(int heartbeat_socket)
 			dfs_datanode_t *dn = malloc(sizeof(dfs_datanode_t));
 			dn->dn_id = datanode_status.datanode_id;
 			dn->port = datanode_status.datanode_listen_port;
-			printf("Filling dnlist. id=%d, port=%d.\n", dn->dn_id, dn->port);
+			//printf("Filling dnlist. id=%d, port=%d.\n", dn->dn_id, dn->port);
 			safeMode = 0;
 		}
 		close(datanode_socket);
@@ -181,6 +181,7 @@ void get_system_information(int client_socket, dfs_cm_client_req_t request)
 		response.datanodes[i]; //WHAT DO I DO HERE?? WHAT IS THIS THING??
 	}
 
+	printf("Sending system information: datanode_num=%d\n", response.datanode_num);
 	send_data(client_socket, &response, sizeof(response));
 }
 

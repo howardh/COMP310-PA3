@@ -21,7 +21,7 @@ extern inline pthread_t * create_thread(void * (*entry_point)(void*), void *args
 int create_tcp_socket()
 {
 	//DONE:create the socket and return the file descriptor 
-	return socket(PF_INET,SOCK_STREAM,0);
+	return socket(AF_INET,SOCK_STREAM,0);
 }
 
 /**
@@ -42,7 +42,7 @@ int create_client_tcp_socket(char* address, int port)
     sin.sin_family = AF_INET;
     sin.sin_port = htons(port);
     sin.sin_addr.s_addr = inet_addr(address);
-	printf("Connecting to destination port.\n");
+	printf("Connecting to destination port %d.\n", port);
     int err = connect(socket, (struct sockaddr*)&sin, sizeof(struct sockaddr_in));
 	if (err < 0)
 		fprintf(stderr, "Connection failed.\n");
@@ -62,38 +62,17 @@ int create_server_tcp_socket(int port)
 	if (sd == INVALID_SOCKET) return 1;
 
 	//TODO: listen on local port
-	struct addrinfo hints;
-	struct addrinfo *servinfo;
-
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = AF_UNSPEC;  // use IPv4 or IPv6, whichever
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;     // fill in my IP for me
-
-	char szPort[5];
-	sprintf(szPort,"%d",port);
-	int status = getaddrinfo(NULL, (const char*)szPort, &hints, &servinfo);
-	if (status != 0)
-		fprintf(stderr, "ERROR\n");
-
-
-	struct addrinfo *p;
-	for(p = servinfo; p != NULL; p = p->ai_next)
-	{
-		sd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-		if (sd == -1)
-			continue;
-
-		if (bind(sd, servinfo->ai_addr, servinfo->ai_addrlen) == -1)
-			continue;
-		
-		break;
-	}
-
-	freeaddrinfo(servinfo);
+	struct sockaddr_in serv_addr, cli_addr;
+	serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port = htons(port);
+    if (bind(sd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) 
+		perror("ERROR on binding");
 
 	if (listen(sd, 10) == -1)
 		fprintf(stderr, "ERROR\n");
+	else
+		printf("Listening on port %d.\n", port);
 
 	return sd;
 }
@@ -109,7 +88,8 @@ void send_data(int socket, void* data, int size)
 	assert(size >= 0);
 	if (socket == INVALID_SOCKET) return;
 	//DONE: send data through socket
-	write(socket, data, size);
+	int n = write(socket, data, size);
+	printf("%d/%d bytes sent.\n", n, size);
 }
 
 /**
@@ -124,5 +104,8 @@ void receive_data(int socket, void* data, int size)
 	assert(size >= 0);
 	if (socket == INVALID_SOCKET) return;
 	//TODO: fetch data via socket
-	read(socket, data, size);
+	int n = read(socket, data, size);
+	if (n < 0)
+		perror("Error reading from socket");
+	printf("%d/%d bytes received.\n", n, size);
 }

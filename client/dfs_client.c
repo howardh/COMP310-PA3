@@ -79,9 +79,10 @@ dfs_system_status *get_system_info(int namenode_socket)
 	assert(namenode_socket != INVALID_SOCKET);
 	//DONE: fill the result and send 
 	dfs_cm_client_req_t request;
+	memset(&request, 0, sizeof(request));
 	request.req_type = 2;
 	printf("Sending get_system_info request..."); fflush(stdout);
-	send_data(namenode_socket, &request, sizeof(dfs_cm_client_req_t));
+	send_data(namenode_socket, &request, sizeof(request));
 	printf("Done.\n");
 	
 	//DONE: get the response

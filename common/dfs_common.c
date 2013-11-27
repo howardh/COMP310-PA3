@@ -61,7 +61,7 @@ int create_server_tcp_socket(int port)
 	int sd = create_tcp_socket();
 	if (sd == INVALID_SOCKET) return 1;
 
-	//TODO: listen on local port
+	//DONE: listen on local port
 	struct sockaddr_in serv_addr, cli_addr;
 	serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -103,7 +103,7 @@ void receive_data(int socket, void* data, int size)
 	assert(data != NULL);
 	assert(size >= 0);
 	if (socket == INVALID_SOCKET) return;
-	//TODO: fetch data via socket
+	//DONE: fetch data via socket
 	int n = read(socket, data, size);
 	if (n < 0)
 		perror("Error reading from socket");

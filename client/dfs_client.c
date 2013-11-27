@@ -74,7 +74,7 @@ int pull_file(int namenode_socket, const char *filename)
 	
 	FILE *file = fopen(filename, "wb");
 	//TODO: resemble the received blocks into the complete file
-	response.query_result.
+	//response.query_result.
 	fclose(file);
 	return 0;
 }

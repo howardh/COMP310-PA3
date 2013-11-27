@@ -62,14 +62,19 @@ int pull_file(int namenode_socket, const char *filename)
 
 	//TODO: fill the request, and send
 	dfs_cm_client_req_t request;
+	strcpy(request.file_name, filename);
+	request.req_type = 0;
+	send_data(namenode_socket, &request, sizeof(request));
 
 	//TODO: Get the response
 	dfs_cm_file_res_t response;
+	receive_data(namenode_socket, &response, sizeof(response));
 	
 	//TODO: Receive blocks from datanodes one by one
 	
 	FILE *file = fopen(filename, "wb");
 	//TODO: resemble the received blocks into the complete file
+	response.query_result.
 	fclose(file);
 	return 0;
 }

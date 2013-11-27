@@ -93,9 +93,18 @@ int register_datanode(int heartbeat_socket)
 		{
 			//TODO: fill dnlist
 			//principle: a datanode with id of n should be filled in dnlist[n - 1] (n is always larger than 0)
-			dfs_datanode_t *dn = malloc(sizeof(dfs_datanode_t));
-			dn->dn_id = datanode_status.datanode_id;
-			dn->port = datanode_status.datanode_listen_port;
+			if (dnlist[datanode_status.datanode_id] == NULL)
+			{
+				dfs_datanode_t *dn = malloc(sizeof(dfs_datanode_t));
+				dn->dn_id = datanode_status.datanode_id;
+				dn->port = datanode_status.datanode_listen_port;
+				dnlist[dn->dn_id-1] = dn;
+				dncnt++;
+			}
+			else
+			{
+				dnlist[datanode_status.datanode_id]->dn_id = datanode_status.datanode_listen_port;
+			}
 			//printf("Filling dnlist. id=%d, port=%d.\n", dn->dn_id, dn->port);
 			safeMode = 0;
 		}

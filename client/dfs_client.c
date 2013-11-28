@@ -46,7 +46,7 @@ int push_file(int namenode_socket, const char* local_path)
 	dfs_cm_client_req_t request;
 
 	//DONE:fill the fields in request and 
-	strcpy(request.file_name, local_path); //FIXME: Is this the file name?
+	strcpy(request.file_name, local_path);
 	fseek(file, 0, SEEK_END); request.file_size = ftell(file); fseek(file, 0, SEEK_SET); //File size
 	request.req_type = 1; //1 = write
 	send_data(namenode_socket, &request, sizeof(request));
@@ -55,7 +55,7 @@ int push_file(int namenode_socket, const char* local_path)
 	dfs_cm_file_res_t response;
 	receive_data(namenode_socket, &response, sizeof(response));
 
-	//TODO: Send blocks to datanodes one by one
+	//DONE: Send blocks to datanodes one by one
 	dfs_cli_dn_req_t block;
 	block.op_type = 1; //1 = create
 	int num_blocks = (response.query_result.file_size + (DFS_BLOCK_SIZE - 1)) / DFS_BLOCK_SIZE;
@@ -83,7 +83,7 @@ int pull_file(int namenode_socket, const char *filename)
 	assert(namenode_socket != INVALID_SOCKET);
 	assert(filename != NULL);
 
-	//TODO: fill the request, and send
+	//DONE: fill the request, and send
 	dfs_cm_client_req_t request;
 	strcpy(request.file_name, filename);
 	request.req_type = 0;
@@ -94,9 +94,23 @@ int pull_file(int namenode_socket, const char *filename)
 	receive_data(namenode_socket, &response, sizeof(response));
 	
 	//TODO: Receive blocks from datanodes one by one
-	
 	FILE *file = fopen(filename, "wb");
+	dfs_cli_dn_req_t request2;
+	request2.op_type = 0; //0 = read
+	int num_blocks = (response.query_result.file_size + (DFS_BLOCK_SIZE - 1)) / DFS_BLOCK_SIZE;
+	int i;
+	for (i = 0; i < num_blocks; i++)
+	{
+		memcpy(&request2.block, &response.query_result.block_list[i], sizeof(dfs_cm_block_t));
+
+		int dn_socket = create_client_tcp_socket(request2.block.loc_ip, request2.block.loc_port);
+		send_data(dn_socket, &request2, sizeof(request2));
+		receive_data(dn_socket, &request2.block.content, DFS_BLOCK_SIZE);
+		int n = fwrite(request2.block.content, sizeof(char), DFS_BLOCK_SIZE, file);
+	}
+	
 	//TODO: resemble the received blocks into the complete file
+	//Done above
 	fclose(file);
 	return 0;
 }

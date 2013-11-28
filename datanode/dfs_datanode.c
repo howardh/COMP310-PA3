@@ -90,7 +90,7 @@ int read_block(int client_socket, const dfs_cli_dn_req_t *request)
 	assert(request != NULL);
 	char buffer[DFS_BLOCK_SIZE];
 	ext_read_block(request->block.owner_name, request->block.block_id, (void *)buffer);
-	//TODO:response the client with the data
+	//DONE:response the client with the data
 	send_data(client_socket, buffer, DFS_BLOCK_SIZE);
 	return 0;
 }

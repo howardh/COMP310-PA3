@@ -19,17 +19,37 @@ int modify_file(char *ip, int port, const char* filename, int file_size, int sta
 	FILE* file = fopen(filename, "rb");
 	assert(file != NULL);
 
-	//TODO:fill the request and send
+	//DONE:fill the request and send
 	dfs_cm_client_req_t request;
 	strcpy(request.file_name, filename);
 	request.file_size = file_size;
-	request.req_type = 3;
+	request.req_type = 3; //3 = Modify file
+	send_data(namenode_socket, &request, sizeof(request));
 	
 	//DONE: receive the response
 	dfs_cm_file_res_t response;
 	receive_data(namenode_socket, &response, sizeof(response));
 
-	//TODO: send the updated block to the proper datanode
+	//DONE: send the updated block to the proper datanode
+	dfs_cli_dn_req_t block;
+	block.op_type = 1; //1 = create
+	int start_block = start_addr/DFS_BLOCK_SIZE;
+	int end_block = (end_addr + (DFS_BLOCK_SIZE - 1)) / DFS_BLOCK_SIZE;
+	fseek(file, start_block*DFS_BLOCK_SIZE, SEEK_SET);
+	int i;
+	for (i = start_block; i <= end_block; i++)
+	{
+		memcpy(&block.block, &response.query_result.block_list[i], sizeof(dfs_cm_block_t));
+		int n = fread(block.block.content, sizeof(char), DFS_BLOCK_SIZE, file);
+		if (n <= 0)
+		{
+			printf("Done reading?\n");
+			break;
+		}
+
+		int dn_socket = create_client_tcp_socket(block.block.loc_ip, block.block.loc_port);
+		send_data(dn_socket, &block, sizeof(block));
+	}
 
 	fclose(file);
 	return 0;
@@ -93,7 +113,7 @@ int pull_file(int namenode_socket, const char *filename)
 	dfs_cm_file_res_t response;
 	receive_data(namenode_socket, &response, sizeof(response));
 	
-	//TODO: Receive blocks from datanodes one by one
+	//DONE: Receive blocks from datanodes one by one
 	FILE *file = fopen(filename, "wb");
 	dfs_cli_dn_req_t request2;
 	request2.op_type = 0; //0 = read
@@ -109,7 +129,7 @@ int pull_file(int namenode_socket, const char *filename)
 		int n = fwrite(request2.block.content, sizeof(char), DFS_BLOCK_SIZE, file);
 	}
 	
-	//TODO: resemble the received blocks into the complete file
+	//DONE: resemble the received blocks into the complete file
 	//Done above
 	fclose(file);
 	return 0;

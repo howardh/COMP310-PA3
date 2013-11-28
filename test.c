@@ -331,10 +331,10 @@ int main(int argc, char **argv)
 	//can contact to single datanode
 	generate_data("local_file", 1024);
 	printf("TEST CASE 1:%s\n", result[test_case_1(argv, 1)]);
-	printf("TEST CASE 2:%s\n", result[test_case_2(argv, 0)]);
-	//can contact to two datanodes	
-	generate_data("local_file_medium", 4096);
-	printf("TEST CASE 3:%s\n", result[test_case_3(argv, 1)]);
+	//printf("TEST CASE 2:%s\n", result[test_case_2(argv, 0)]);
+	////can contact to two datanodes	
+	//generate_data("local_file_medium", 4096);
+	//printf("TEST CASE 3:%s\n", result[test_case_3(argv, 1)]);
 	//printf("TEST CASE 4:%s\n", result[test_case_4(argv, 0)]);
 	////can handle chunk pieces
 	//generate_data("local_file_large", 8192);
@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 	////check every file is stored correctly
 	//printf("TEST CASE 7:%s\n", result[test_case_7(argv)]);
 	////modify the file
-	//append_data("local_file", 1024);
-	//printf("TEST CASE 8:%s\n", result[test_case_8(argv, 3)]);
+	append_data("local_file", 1024);
+	printf("TEST CASE 8:%s\n", result[test_case_8(argv, 3)]);
 	return 0;
 }

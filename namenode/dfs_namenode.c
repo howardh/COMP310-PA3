@@ -222,10 +222,24 @@ int get_file_update_point(int client_socket, dfs_cm_client_req_t request)
 		if (file_image == NULL) continue;
 		if (strcmp(file_image->filename, request.file_name) != 0) continue;
 		dfs_cm_file_res_t response;
-		//TODO: fill the response and send it back to the client
-		// Send back the data block assignments to the client
+		//DONE: fill the response and send it back to the client
 		memset(&response, 0, sizeof(response));
-		//TODO: fill the response and send it back to the client
+
+		int block_count = (request.file_size + (DFS_BLOCK_SIZE - 1)) / DFS_BLOCK_SIZE;
+		int i;
+		for (i = 0; i < block_count; i++)
+		{
+			int dn_id = i%dncnt+1;
+			strcpy(file_image->block_list[i].owner_name, request.file_name);
+			file_image->block_list[i].dn_id = dn_id;
+			file_image->block_list[i].block_id = i;
+			file_image->block_list[i].loc_port = dnlist[dn_id-1]->port;
+			strcpy(file_image->block_list[i].loc_ip, dnlist[dn_id-1]->ip);
+		}
+		// Send back the data block assignments to the client
+		memcpy(&response.query_result, file_image, sizeof(dfs_cm_file_t));
+		send_data(client_socket, &response, sizeof(response));
+
 		return 0;
 	}
 	//FILE NOT FOUND

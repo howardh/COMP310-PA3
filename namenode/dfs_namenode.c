@@ -91,18 +91,22 @@ int register_datanode(int heartbeat_socket)
 
 		if (datanode_status.datanode_id < MAX_DATANODE_NUM)
 		{
-			//TODO: fill dnlist
+			//DONE: fill dnlist
 			//principle: a datanode with id of n should be filled in dnlist[n - 1] (n is always larger than 0)
 			if (dnlist[datanode_status.datanode_id] == NULL)
 			{
 				dfs_datanode_t *dn = malloc(sizeof(dfs_datanode_t));
 				dn->dn_id = datanode_status.datanode_id;
+				char* ip = inet_ntoa(datanode_address.sin_addr);
+				strcpy(dn->ip, ip);
 				dn->port = datanode_status.datanode_listen_port;
 				dnlist[dn->dn_id-1] = dn;
 				dncnt++;
 			}
 			else
 			{
+				char* ip = inet_ntoa(datanode_address.sin_addr);
+				strcpy(dnlist[datanode_status.datanode_id]->ip, ip);
 				dnlist[datanode_status.datanode_id]->dn_id = datanode_status.datanode_listen_port;
 			}
 			//printf("Filling dnlist. id=%d, port=%d.\n", dn->dn_id, dn->port);
@@ -152,11 +156,24 @@ int get_file_receivers(int client_socket, dfs_cm_client_req_t request)
 	(*file_image)->blocknum = block_count;
 	int next_data_node_index = 0;
 
-	//TODO:Assign data blocks to datanodes, round-robin style (see the Documents)
+	//DONE:Assign data blocks to datanodes, round-robin style (see the Documents)
+	dfs_cm_file_t* file = *file_image;
+	int i;
+	for (i = 0; i < block_count; i++)
+	{
+		int dn_id = i%dncnt+1;
+		strcpy(file->block_list[i].owner_name, request.file_name);
+		file->block_list[i].dn_id = dn_id;
+		file->block_list[i].block_id = i;
+		file->block_list[i].loc_port = dnlist[dn_id-1]->port;
+		strcpy(file->block_list[i].loc_ip, dnlist[dn_id-1]->ip);
+	}
 
 	dfs_cm_file_res_t response;
 	memset(&response, 0, sizeof(response));
-	//TODO: fill the response and send it back to the client
+	//DONE: fill the response and send it back to the client
+	memcpy(&response.query_result, file, sizeof(dfs_cm_file_t));
+	send_data(client_socket, &response, sizeof(response));
 
 	return 0;
 }
@@ -171,6 +188,8 @@ int get_file_location(int client_socket, dfs_cm_client_req_t request)
 		if (strcmp(file_image->filename, request.file_name) != 0) continue;
 		dfs_cm_file_res_t response;
 		//TODO: fill the response and send it back to the client
+		memcpy(&response.query_result, file_image, sizeof(dfs_cm_file_res_t));
+		send_data(client_socket, &response, sizeof(response));
 
 		return 0;
 	}

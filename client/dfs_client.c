@@ -25,8 +25,9 @@ int modify_file(char *ip, int port, const char* filename, int file_size, int sta
 	request.file_size = file_size;
 	request.req_type = 3;
 	
-	//TODO: receive the response
+	//DONE: receive the response
 	dfs_cm_file_res_t response;
+	receive_data(namenode_socket, &response, sizeof(response));
 
 	//TODO: send the updated block to the proper datanode
 
@@ -44,12 +45,34 @@ int push_file(int namenode_socket, const char* local_path)
 	// Create the push request
 	dfs_cm_client_req_t request;
 
-	//TODO:fill the fields in request and 
+	//DONE:fill the fields in request and 
+	strcpy(request.file_name, local_path); //FIXME: Is this the file name?
+	fseek(file, 0, SEEK_END); request.file_size = ftell(file); fseek(file, 0, SEEK_SET); //File size
+	request.req_type = 1; //1 = write
+	send_data(namenode_socket, &request, sizeof(request));
 	
-	//TODO:Receive the response
+	//DONE:Receive the response
 	dfs_cm_file_res_t response;
+	receive_data(namenode_socket, &response, sizeof(response));
 
 	//TODO: Send blocks to datanodes one by one
+	dfs_cli_dn_req_t block;
+	block.op_type = 1; //1 = create
+	int num_blocks = (response.query_result.file_size + (DFS_BLOCK_SIZE - 1)) / DFS_BLOCK_SIZE;
+	int i;
+	for (i = 0; i < num_blocks; i++)
+	{
+		memcpy(&block.block, &response.query_result.block_list[i], sizeof(dfs_cm_block_t));
+		int n = fread(block.block.content, sizeof(char), DFS_BLOCK_SIZE, file);
+		if (n <= 0)
+		{
+			printf("Done reading?\n");
+			break;
+		}
+
+		int dn_socket = create_client_tcp_socket(block.block.loc_ip, block.block.loc_port);
+		send_data(dn_socket, &block, sizeof(block));
+	}
 
 	fclose(file);
 	return 0;
@@ -66,7 +89,7 @@ int pull_file(int namenode_socket, const char *filename)
 	request.req_type = 0;
 	send_data(namenode_socket, &request, sizeof(request));
 
-	//TODO: Get the response
+	//DONE: Get the response
 	dfs_cm_file_res_t response;
 	receive_data(namenode_socket, &response, sizeof(response));
 	
@@ -74,7 +97,6 @@ int pull_file(int namenode_socket, const char *filename)
 	
 	FILE *file = fopen(filename, "wb");
 	//TODO: resemble the received blocks into the complete file
-	//response.query_result.
 	fclose(file);
 	return 0;
 }

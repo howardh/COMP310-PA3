@@ -35,19 +35,19 @@ int create_client_tcp_socket(char* address, int port)
 	int socket = create_tcp_socket();
 	if (socket == INVALID_SOCKET) return 1;
 
-	printf("Socket created.\n");
+	//printf("Socket created.\n");
 
 	//DONE: connect it to the destination port
 	sockaddr_in sin;
     sin.sin_family = AF_INET;
     sin.sin_port = htons(port);
     sin.sin_addr.s_addr = inet_addr(address);
-	printf("Connecting to destination port %d.\n", port);
+	//printf("Connecting to destination port %d.\n", port);
     int err = connect(socket, (struct sockaddr*)&sin, sizeof(struct sockaddr_in));
 	if (err < 0)
 		fprintf(stderr, "Connection failed.\n");
-	else
-		printf("Connection successful.\n");
+	//else
+	//	printf("Connection successful.\n");
 
 	return socket;
 }
@@ -71,8 +71,8 @@ int create_server_tcp_socket(int port)
 
 	if (listen(sd, 10) == -1)
 		fprintf(stderr, "ERROR\n");
-	else
-		printf("Listening on port %d.\n", port);
+	//else
+	//	printf("Listening on port %d.\n", port);
 
 	return sd;
 }
@@ -100,6 +100,7 @@ void send_data(int socket, void* data, int size)
  */
 void receive_data(int socket, void* data, int size)
 {
+	if (size == 0) return;
 	assert(data != NULL);
 	assert(size >= 0);
 	if (socket == INVALID_SOCKET) return;
@@ -108,4 +109,5 @@ void receive_data(int socket, void* data, int size)
 	if (n < 0)
 		perror("Error reading from socket");
 	printf("%d/%d bytes received.\n", n, size);
+	receive_data(socket, data+n, size-n);
 }

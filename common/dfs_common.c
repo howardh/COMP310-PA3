@@ -106,7 +106,7 @@ void receive_data(int socket, void* data, int size)
 	if (socket == INVALID_SOCKET) return;
 	//DONE: fetch data via socket
 	int n = read(socket, data, size);
-	if (n < 0)
+	if (n <= 0)
 		perror("Error reading from socket");
 	printf("%d/%d bytes received.\n", n, size);
 	receive_data(socket, data+n, size-n);
